@@ -46,8 +46,8 @@ criterion = nn.L1Loss()
 optimizer = optim.SGD(model_partial.parameters(), lr= 0.001, nesterov =False)
 
 #set the first fully connected layer depending on the number of parameters 
-model_partial.getBeta().set_firstLinearLayer(13312)
-model_partial_2.getBeta().set_firstLinearLayer(13312)
+model_partial.getDecoder().set_firstLinearLayer(13312)
+model_partial_2.getDecoder().set_firstLinearLayer(13312)
 model_partial.to('cpu')
 
 #hold one batch of data respectively

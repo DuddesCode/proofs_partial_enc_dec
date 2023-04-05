@@ -46,8 +46,8 @@ running_loss = 0.0
 #contains one batch of images
 sample = next(iter(dataloader))
 
-subfull_alpha_pre_train = copy.deepcopy(model_Full.getAlpha()).state_dict()
-subfull_beta_pre_train = copy.deepcopy(model_Full.getBeta()).state_dict()
+subfull_alpha_pre_train = copy.deepcopy(model_Full.getEncoder()).state_dict()
+subfull_beta_pre_train = copy.deepcopy(model_Full.getDecoder()).state_dict()
 #train step for model_Full
 
 #prepare inputs and labels
@@ -68,8 +68,8 @@ loss_alpha = loss_alpha.item()
 
 #save Full model parts for checks  
 setup_alpha_post_train = model_Full.state_dict()
-subfull_alpha_post_train = copy.deepcopy(model_Full.getAlpha()).state_dict()
-subfull_beta_post_train = copy.deepcopy(model_Full.getBeta()).state_dict()
+subfull_alpha_post_train = copy.deepcopy(model_Full.getEncoder()).state_dict()
+subfull_beta_post_train = copy.deepcopy(model_Full.getDecoder()).state_dict()
 print('----------------------------------------------------------------------------------')
 print('if differences are displayed training has occured in the encoder of the full model')
 compare_models(subfull_alpha_post_train, subfull_alpha_pre_train)
@@ -109,8 +109,8 @@ labels = labels.type(torch.FloatTensor)
 inputs, labels = inputs.to(global_device), labels.to(global_device)
 
 #save the layers of the second model for checks
-subbeta_pre_train = copy.deepcopy(model_Full_2.getBeta()).to('cpu').state_dict()
-subalpha_pre_train = copy.deepcopy(model_Full_2.getAlpha()).to('cpu').state_dict()
+subbeta_pre_train = copy.deepcopy(model_Full_2.getDecoder()).to('cpu').state_dict()
+subalpha_pre_train = copy.deepcopy(model_Full_2.getEncoder()).to('cpu').state_dict()
 
 #pass through Encoder
 outputs = model_Full_2.getEncoder()(inputs)
@@ -136,8 +136,8 @@ loss_beta = loss_beta.item()
 #saves the trained state dict of partial mode
 setup_beta_post_train = model_Full_2.state_dict()
 
-subbeta_post_train = model_Full_2.getBeta().to('cpu').state_dict()
-subalpha_post_train = model_Full_2.getAlpha().to('cpu').state_dict()
+subbeta_post_train = model_Full_2.getDecoder().to('cpu').state_dict()
+subalpha_post_train = model_Full_2.getEncoder().to('cpu').state_dict()
 
 
 print('Proof that weights and biases are equal if deterministics criterias are satisfied')

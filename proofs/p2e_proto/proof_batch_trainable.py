@@ -17,8 +17,8 @@ from progress.bar import IncrementalBar
 from helping_functions import compare_models
 
 #used for reproducibility 
-torch.backends.cudnn.deterministic = True
-torch.use_deterministic_algorithms(True)
+#torch.backends.cudnn.deterministic = True
+#torch.use_deterministic_algorithms(True)
 
 #directory where tiles are located
 param_tile_dir = 'src/tiles/'
@@ -99,7 +99,7 @@ for i, data in enumerate(dataloader, 0):
     bar.next()
 bar.finish()
 #pushes the concatenated outputs through the Decoder
-outputs = model_partial.getBeta()(outputs_old)
+outputs = model_partial.getDecoder()(outputs_old)
 #used so that the gradient is not deleted from the output
 outputs.retain_grad()
 

@@ -40,7 +40,7 @@ criterion = nn.L1Loss()
 optimizer = optim.SGD(model_partial.parameters(), lr= 0.001, nesterov =False)
 
 #used to fit the first linear layer to the concatenated input
-model_partial.getBeta().set_firstLinearLayer(13312)
+model_partial.getDecoder().set_firstLinearLayer(13312)
 model_partial.to(global_device)
 
 model_partial_pre_run = copy.deepcopy(model_partial).to('cpu').state_dict()

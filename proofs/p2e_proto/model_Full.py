@@ -36,8 +36,9 @@ class Full_Net(nn.Module):
         batch of tensors
             contains the transformed data
         """      
-        x = self.alpha(x)
-        x = self.beta(x)
+        x = self.encoder(x)
+        x = self.decoder(x)
+        
         return x
 
     def getEncoder(self):
