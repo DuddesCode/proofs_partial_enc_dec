@@ -3,6 +3,20 @@
 import torch
 
 def compare_models(model_1, model_2):
+    """compares two state_dicts of a model of the same kind
+
+    Parameters
+    ----------
+    model_1 : torch.state_dict
+        contains a state_dict
+    model_2 : torch.state_dict
+        contains a state_dict
+
+    Raises
+    ------
+    Exception
+        raised if the state_dicts are of different sizes
+    """    
     models_differ = 0
     for key_item_1, key_item_2 in zip(model_1.items(), model_2.items()):
         if torch.equal(key_item_1[1], key_item_2[1]):

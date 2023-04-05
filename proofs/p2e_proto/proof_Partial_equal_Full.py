@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from datastruct import ToTensor, WSIDataSet
 from model_Enc import model_Enc
-from model_Att import model_Att
+from model_Dec import model_Dec
 from model_Full import Full_Net
 import copy
 from helping_functions import compare_models
@@ -30,15 +30,12 @@ param_model_enc = model_Enc()
 #deepcopy of model_enc
 param_model_enc2 = copy.deepcopy(param_model_enc)
 
-param_model_att = model_Att()
+param_model_dec = model_Dec()
 #deepcopy of model_att
-param_model_att2 = copy.deepcopy(param_model_att)
+param_model_dec2 = copy.deepcopy(param_model_dec)
 
-#pAlpha
-#alpha
-#mAlpha
-
-model_Full = Full_Net(param_model_enc, param_model_att).to(global_device)
+ #full model 
+model_Full = Full_Net(param_model_enc, param_model_dec).to(global_device)
 
 setup_alpha_pre_train = copy.deepcopy(model_Full).state_dict()
 #define criterion, optimizer
@@ -53,29 +50,31 @@ subfull_alpha_pre_train = copy.deepcopy(model_Full.getAlpha()).state_dict()
 subfull_beta_pre_train = copy.deepcopy(model_Full.getBeta()).state_dict()
 #train step for model_Full
 
+#prepare inputs and labels
 inputs = sample['img'] 
 labels = torch.zeros(1)
 labels = labels.type(torch.FloatTensor)
 inputs, labels = inputs.to(global_device), labels.to(global_device)
 
+#put them through the full model
 outputs = model_Full(inputs)
 
+#compute and backtrack loss of the full model
 loss_alpha = criterion(outputs, labels)
 loss_alpha.backward()
 optimizer.step()
 optimizer.zero_grad()
 loss_alpha = loss_alpha.item()
 
-
+#save Full model parts for checks  
 setup_alpha_post_train = model_Full.state_dict()
 subfull_alpha_post_train = copy.deepcopy(model_Full.getAlpha()).state_dict()
 subfull_beta_post_train = copy.deepcopy(model_Full.getBeta()).state_dict()
-#used to free some gpu space
 print('----------------------------------------------------------------------------------')
-print('model Full Encoder')
+print('if differences are displayed training has occured in the encoder of the full model')
 compare_models(subfull_alpha_post_train, subfull_alpha_pre_train)
 print('----------------------------------------------------------------------------------')
-print('model Full Decoder')
+print('if differences are displayed training has occured in the decoder of the full model')
 compare_models(subfull_beta_post_train, subfull_beta_pre_train)
 print('----------------------------------------------------------------------------------')
 
@@ -89,39 +88,46 @@ del labels
 del model_Full
 del optimizer
 del outputs
-del param_model_att
+del param_model_dec
 del param_model_enc
 torch.cuda.empty_cache()
 
-
-model_Full_2 = Full_Net(param_model_enc2, param_model_att2)
+#make the second model ready for training
+model_Full_2 = Full_Net(param_model_enc2, param_model_dec2)
 model_Full_2.to(global_device)
 
 #saves the untrained model of the partial mode
 setup_beta_pre_train = copy.deepcopy(model_Full_2).state_dict()
 
+#define a second optimizer
 optimizer_beta = optim.SGD(model_Full_2.parameters(), lr=0.001,nesterov=False)    
 
+#prepare inputs and labels
 inputs = sample['img']
-
 labels = torch.zeros(1)
 labels = labels.type(torch.FloatTensor)
 inputs, labels = inputs.to(global_device), labels.to(global_device)
 
+#save the layers of the second model for checks
 subbeta_pre_train = copy.deepcopy(model_Full_2.getBeta()).to('cpu').state_dict()
 subalpha_pre_train = copy.deepcopy(model_Full_2.getAlpha()).to('cpu').state_dict()
 
-outputs = model_Full_2.getAlpha()(inputs)
+#pass through Encoder
+outputs = model_Full_2.getEncoder()(inputs)
 
+#free memory
 del inputs
 torch.cuda.empty_cache()
 
-outputs = model_Full_2.getBeta()(outputs)
+#decoder pass
+outputs = model_Full_2.getDecoder()(outputs)
 loss_beta = criterion(outputs, labels)
 
+#free memory
 del outputs
 torch.cuda.empty_cache()
 
+#Full_Net2 loss computation and optimizer
 loss_beta.backward()
 optimizer_beta.step()
 optimizer_beta.zero_grad()
@@ -142,12 +148,9 @@ print('Proof that the losses are identical')
 print(loss_alpha-loss_beta)
 print('----------------------------------------------------------------------------------')
 print('Proof that the submodels are trained during both loops')
-print('model partial Encoder')
+print('if differences are displayed training has occured in the encoder of the partial model')
 compare_models(subalpha_post_train, subalpha_pre_train)
 print('----------------------------------------------------------------------------------')
-print('model partial Decoder')
+print('if differences are displayed training has occured in the decoder of the partial model')
 compare_models(subbeta_post_train, subbeta_pre_train)
 print('----------------------------------------------------------------------------------')
-'''l1 = criterion(model_Full(inputs),labels)
-l2 = criterion(model_Full_2(inputs),labels)
-print(l1,l2)'''

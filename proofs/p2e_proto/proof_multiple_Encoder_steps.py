@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from datastruct import ToTensor, WSIDataSet
 from model_Enc import model_Enc
-from model_Att import model_Att
+from model_Dec import model_Dec
 from model_Full import Full_Net
 import copy
 from helping_functions import compare_models
@@ -29,11 +29,11 @@ param_transformed_dataset = WSIDataSet(
                                            ]))
 dataloader = DataLoader(param_transformed_dataset, batch_size=13, shuffle=False)
 
-"""initializes the parameter models"""
+#initializes the parameter models
 param_model_enc = model_Enc()
-param_model_att = model_Att()
+param_model_dec = model_Dec()
 
-model_partial = Full_Net(param_model_enc, param_model_att)
+model_partial = Full_Net(param_model_enc, param_model_dec)
 
 criterion = nn.L1Loss()
 
@@ -55,12 +55,12 @@ for i, data in enumerate(dataloader, 0):
     if i == 0:
         inputs_first_enc = inputs.to('cpu')
         print('first pass through encoder')
-        outputs = model_partial.getAlpha()(inputs)
+        outputs = model_partial.getEncoder()(inputs)
         outputs_old = outputs
     
     if i == 1:
         inputs_second_run = inputs.to('cpu')
-        outputs = model_partial.getAlpha()(inputs)
+        outputs = model_partial.getEncoder()(inputs)
         print('second pass through encoder')
         #need to use not due to the nature of torch.equal
         print("Are the inputs of first encoder run different than the second: ", not torch.equal(inputs_first_enc, inputs_second_run))
@@ -71,7 +71,7 @@ for i, data in enumerate(dataloader, 0):
         outputs_old.retain_grad()
         print('pass through decoder')
         
-        outputs = model_partial.getBeta()(outputs_old)
+        outputs = model_partial.getDecoder()(outputs_old)
         outputs.retain_grad()
         loss= criterion(outputs, labels)
         print('loss is being computed')

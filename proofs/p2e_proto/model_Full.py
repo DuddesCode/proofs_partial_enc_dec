@@ -2,19 +2,61 @@
 import torch.nn as nn
 
 class Full_Net(nn.Module):
+    """defines the complete Network
+
+    Parameters
+    ----------
+    nn : nn.Module
+        base class from which the functions are derived
+    
+    Functions
+    ----------
+    forward(x)
+        defines how the data is passed trough the model
+    getEncoder()
+        returns the Encoder
+    getDecoder()
+        returns the Decoder
+    """    
     def __init__(self, model_enc, model_att) -> None:
         super(Full_Net, self).__init__()
-        self.alpha = model_enc
-        self.beta = model_att
+        self.encoder = model_enc
+        self.decoder = model_att
 
     def forward(self, x):
+        """defines how the data is passed throught the model
+
+        Parameters
+        ----------
+        x : batch of tensors
+            contains a batch of tensors 
+
+        Returns
+        -------
+        batch of tensors
+            contains the transformed data
+        """      
         x = self.alpha(x)
         x = self.beta(x)
         return x
 
-    def getAlpha(self):
-        return self.alpha
+    def getEncoder(self):
+        """returns the Encoder
 
-    def getBeta(self):
-        return self.beta
+        Returns
+        -------
+        nn.Module
+            Encoder model
+        """        
+        return self.encoder
+
+    def getDecoder(self):
+        """returns the Decoder
+
+        Returns
+        -------
+        nn.Module
+            Decoder model
+        """        
+        return self.decoder
 

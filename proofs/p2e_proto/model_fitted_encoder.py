@@ -7,6 +7,32 @@ import torch.nn.functional as F
 
 
 class model_fitted_Enc(nn.Module):
+    """smaller Encoder Model used in the proofs
+
+    Parameters
+    ----------
+    nn : nn.Module
+        Module from which the model is derived
+    
+    Attributes
+    ----------
+    conv1 : nn.Conv2d
+    pool1 : nn.MaxPool2d
+    conv2 : nn.Conv2d
+    conv3 : nn.Conv2d
+    pool2 : nn.MaxPool2d
+    conv4 : nn.Conv2d
+    conv5 : nn.Conv2d
+    pool3 : nn.MaxPool2d
+    pool4 : nn.MaxPool2d
+    pool5 : nn.MaxPool2d
+    pool6 : nn.MaxPool2d
+
+    Functions
+    ----------
+    forward(x)
+        defines how the data is passed through the model
+    """ 
     def __init__(self):
         super(model_fitted_Enc, self).__init__()
         self.conv1 = nn.Conv2d(4, 40, 1)
@@ -22,6 +48,18 @@ class model_fitted_Enc(nn.Module):
         self.pool6 = nn.MaxPool2d(2,2)
     
     def forward(self, x):
+        """defines how the data is passed throught the model
+
+        Parameters
+        ----------
+        x : batch of tensors
+            contains a batch of tensors 
+
+        Returns
+        -------
+        batch of tensors
+            contains the transformed data
+        """
         x = F.relu(self.conv1(x))
 
         x = self.pool1(x)

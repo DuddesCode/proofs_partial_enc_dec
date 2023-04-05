@@ -1,4 +1,4 @@
-"""scrit that contains the proof that the model can be run in a partial full trainable way.
+"""script that contains the proof that the model can be run in a partial way.
 it is decided by the batch whether it is is fully end to end trained or not.
 """
 import sys
@@ -17,8 +17,8 @@ from progress.bar import IncrementalBar
 from helping_functions import compare_models
 
 #used for reproducibility 
-#torch.backends.cudnn.deterministic = True
-#torch.use_deterministic_algorithms(True)
+torch.backends.cudnn.deterministic = True
+torch.use_deterministic_algorithms(True)
 
 #directory where tiles are located
 param_tile_dir = 'src/tiles/'
@@ -35,12 +35,12 @@ param_transformed_dataset = WSIDataSet(
 #batches the dataset
 dataloader = DataLoader(param_transformed_dataset, batch_size=13, shuffle=False)
 
-"""initializes the parameter models"""
+#initializes the parameter models
 param_model_enc = model_fitted_Enc()
-param_model_att = model_fitted_Decoder()
+param_model_dec = model_fitted_Decoder()
 
 #initialize the models 
-model_partial = Full_Net(param_model_enc, param_model_att)
+model_partial = Full_Net(param_model_enc, param_model_dec)
 #model_partial_2 = copy.deepcopy(model_partial)
 
 criterion = nn.L1Loss()
@@ -71,14 +71,13 @@ for i, data in enumerate(dataloader, 0):
     
     #if a batch is marked. it is pushed through the encoder with gradient
     if mark:
-        outputs = model_partial.getAlpha()(inputs)
+        outputs = model_partial.getEncoder()(inputs)
         marked_output = outputs
         marked_output.retain_grad()
     #if it is not it is sent with torch.no_grad
     else:
         with torch.no_grad():
-            outputs = model_partial.getAlpha()(inputs)
-            print(outputs.grad_fn)
+            outputs = model_partial.getEncoder()(inputs)
     outputs.to(global_device)
 
     #saves an unmarked outputs to check if it has a gradient
@@ -99,7 +98,6 @@ for i, data in enumerate(dataloader, 0):
         break
     bar.next()
 bar.finish()
-print(outputs_old)
 #pushes the concatenated outputs through the Decoder
 outputs = model_partial.getBeta()(outputs_old)
 #used so that the gradient is not deleted from the output
